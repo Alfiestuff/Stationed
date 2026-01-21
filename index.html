@@ -1,102 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TubeGuessr</title>
-
-    <!-- Leaflet CSS -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
-
-    <style>
-      body {
-        margin: 0;
-        font-family: system-ui, sans-serif;
-      }
-      #game {
-        padding: 12px;
-        background: #111;
-        color: #fff;
-      }
-      #map {
-        height: calc(100vh - 60px);
-      }
-      button {
-        margin-left: 12px;
-      }
-    </style>
+    <title>Stationed in London - London Underground Guessing Game</title>
+    <meta name="description" content="Test your knowledge of London Underground stations" />
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="game">
-      <strong id="prompt">Where is: Oxford Circus?</strong>
-      <button id="submit" disabled>Submit guess</button>
-      <span id="result"></span>
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🚇</div>
+        <span class="logo-text">Stationed in: London</span>
+      </div>
+      <div class="header-stats">
+        <div class="stat">
+          <div class="stat-label">Round</div>
+          <div class="stat-value" id="round">1/10</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Score</div>
+          <div class="stat-value accent" id="score">0</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Game Container -->
+    <div class="game-container">
+      <!-- Prompt Card -->
+      <div class="prompt-card">
+        <div class="prompt-content">
+          <div class="prompt-label">
+            <span>📍 Find this station</span>
+            <span class="round-badge" id="round-badge">Round 1</span>
+          </div>
+          <h1 class="prompt-station">
+            Where is <span class="highlight" id="station-name">Oxford Circus</span>?
+          </h1>
+        </div>
+        <div class="prompt-actions">
+          <div class="result-display" id="result-display">
+            <div class="result-distance" id="result-distance">
+              <span>🎯</span>
+              <span id="distance-value">245m</span>
+            </div>
+            <div class="result-points">
+              <span id="points-earned">+850</span> points
+            </div>
+          </div>
+          <button class="btn btn-primary" id="submit-btn" type="button" disabled>
+            <span>🎯</span>
+            Submit Guess
+          </button>
+          <button class="btn btn-secondary next-round-btn" id="next-btn" type="button">Next Round →</button>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="map-container">
+        <div id="map"></div>
+        <div class="map-hint" id="map-hint">
+          <span>👆</span>
+          Click anywhere on the map to place your guess
+        </div>
+      </div>
     </div>
 
-    <div id="map"></div>
+    <!-- Game Over Screen -->
+    <div class="game-over" id="game-over">
+      <div class="game-over-card">
+        <div class="game-over-icon">🏆</div>
+        <h2 class="game-over-title">Game Complete!</h2>
+        <p class="game-over-subtitle">You've guessed all 10 stations</p>
+        <div class="final-score">
+          <div class="final-score-label">Final Score</div>
+          <div class="final-score-value" id="final-score">0</div>
+          <p class="final-score-message" id="score-message">Keep exploring!</p>
+        </div>
+        <button class="btn btn-primary play-again-btn" id="play-again-btn" type="button">Play Again</button>
+      </div>
+    </div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-      // 1. Create map centered on London
-      const map = L.map("map").setView([51.5074, -0.1278], 11);
-
-      // 2. Free OpenStreetMap tiles
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
-
-      const noLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors & CARTO'});
-
-      map.addLayer(noLabels);
-
-      // 3. Game state
-      let guessMarker = null;
-      let guessedLatLng = null;
-
-      // Example station (replace with random selection later)
-      const station = {
-        name: "Oxford Circus",
-        lat: 51.515419,
-        lng: -0.141099,
-      };
-
-      // 4. Handle map click
-      map.on("click", (e) => {
-        guessedLatLng = e.latlng;
-
-        if (guessMarker) {
-          map.removeLayer(guessMarker);
-        }
-
-        guessMarker = L.marker(e.latlng).addTo(map);
-        document.getElementById("submit").disabled = false;
-      });
-
-      // 5. Distance calculation (meters)
-      function distance(a, b) {
-        return map.distance(a, b);
-      }
-
-      // 6. Submit guess
-      document.getElementById("submit").onclick = () => {
-        const real = L.latLng(station.lat, station.lng);
-        const d = Math.round(distance(guessedLatLng, real));
-
-        // Show real location
-        L.circleMarker(real, {
-          radius: 8,
-          color: "red",
-        }).addTo(map);
-        map.removeLayer(noLabels)
-
-        document.getElementById("result").textContent = ` — ${d} m away`;
-      };
-    </script>
+    <script src="game.js"></script>
   </body>
 </html>
